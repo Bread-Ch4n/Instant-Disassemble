@@ -1,5 +1,8 @@
-﻿using BepInEx;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using BepInEx;
 using BepInEx.Logging;
+using EPOOutline;
 using HarmonyLib;
 using IAmFuture.Gameplay.Buildings;
 using IAmFuture.MiniGames.DisassembleObjectMode;
@@ -32,17 +35,28 @@ public class Plugin : BaseUnityPlugin
             transfer.Initialize(disassembleObject, actor);
             transfer.DisablePossibilityToTransfer();
 
+            PropertyInfo ListInProcess = AccessTools.Property(
+                typeof(DisassembleObjectGameMode),
+                "ListInProcess");
+
             Transform disassemblePoint = (Transform)AccessTools.Field(typeof(DisassembleObjectGameMode), "disassemblePoint").GetValue(__instance);
 
             DisassembleElementList elementList = ((IObjectPool)AccessTools.Field(typeof(DisassembleObjectGameMode), "objectPool").GetValue(__instance)).GetObject(currentProgression.GetDisassembleObjectPrefab(), disassemblePoint)
                 .GetComponent<DisassembleElementList>();
-            AccessTools.Property(typeof(DisassembleObjectGameMode), "ListInProcess")
-                .SetValue(__instance, elementList);
+            ListInProcess.SetValue(__instance, elementList);
             elementList.RestoreState(currentProgression.SavedProgress);
 
+            Outliner outliner = (Outliner)AccessTools.Field(typeof(DisassembleObjectGameMode), "outliner").GetValue(__instance);
+            outliner.enabled = ((DisassembleElementList)ListInProcess.GetValue(__instance)).Elements.Count > 1;
+
             AccessTools.Method(typeof(DisassembleObjectGameMode), "Subscribe").Invoke(__instance, null);
+
             ((GUI_ObjectRotationController)AccessTools.Field(typeof(DisassembleObjectGameMode), "rotationController")
                 .GetValue(__instance)).TargetTransform = disassemblePoint;
+
+            AccessTools.Field(typeof(DisassembleObjectGameMode), "isBeginned")
+                .SetValue(__instance, true);
+
             __instance.OnBegin.Invoke();
 
             foreach (DisassembleElementBase element in elementList.Elements)
@@ -50,11 +64,9 @@ public class Plugin : BaseUnityPlugin
                 AccessTools.Method(typeof(DisassembleElementList), "RecycleElement")
                     .Invoke(elementList, new object[] { element });
                 element.Initialize(1f);
+                AccessTools.Method(typeof(DisassembleObjectGameMode), "OnElementRecycled")
+                    .Invoke(__instance, null);
             }
-
-            transfer.EnablePossibilityToTransfer();
-
-            __instance.OnUpdated.Invoke();
             return false;
         }
     }

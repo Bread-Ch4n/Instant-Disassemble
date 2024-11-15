@@ -26,8 +26,11 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Reference Include="EasyPerformantOutline.Assembly">
+          <HintPath>..\..\..\..\..\SteamLibrary\steamapps\common\I Am Future\I Am Future_Data\Managed\EasyPerformantOutline.Assembly.dll</HintPath>
+        </Reference>
         <Reference Include="IAmFuture">
-            <HintPath>..\..\..\..\..\SteamLibrary\steamapps\common\I Am Future\I Am Future_Data\Managed\IAmFuture.dll</HintPath>
+          <HintPath>..\..\..\..\..\SteamLibrary\steamapps\common\I Am Future\I Am Future_Data\Managed\IAmFuture.dll</HintPath>
         </Reference>
         <Reference Include="Sirenix.Serialization">
             <HintPath>..\..\..\..\..\SteamLibrary\steamapps\common\I Am Future\I Am Future_Data\Managed\Sirenix.Serialization.dll</HintPath>
